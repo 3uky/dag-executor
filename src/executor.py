@@ -61,10 +61,10 @@ class Task:
     def __str__(self):
         return f"{self.id}"
 
-    def execute(self):
-        logger.info(f"Task {self.id} STARTED")
+    def execute(self, inputs):
+        logger.info(f"Task {self.id} STARTED\tinputs: {inputs}")
         self.started = True
-        self.result = self.callable()
+        self.result = self.callable(inputs)
         self.executed = True
         logger.info(f"Task {self.id} FINISHED")
 
@@ -80,71 +80,74 @@ class Pipeline:
     def set_dependency(self, node_a, node_b):
         self.graph.add_edge(node_a, node_b)
 
+    def get_dependencies(self, node):
+        return self.graph.input_nodes(node)
+
     def get_initial_tasks(self):
         return {t for t in self.graph.nodes_without_input() if not t.executed}
 
     def get_ready_to_run_tasks(self):
         return {t for t in self.get_tasks() if not t.started and self.__are_all_required_inputs_available(t)}
 
-    def get_required_inputs(self, task):
-        return {input.result for input in self.graph.input_nodes(task)}
-
     def get_tasks(self):
         return self.graph.nodes
+
+    def get_required_inputs(self, task):
+        return {dependency.result for dependency in self.get_dependencies(task)}
 
     def __are_all_required_inputs_available(self, task):
         return all(input.executed for input in self.graph.input_nodes(task))
 
 class Executor:
     """Executor that runs the tasks in the DAG respecting the dependencies."""
-
     def __init__(self):
-        self.execution_queue = {}
+        self.futures = set()
         self.executor = concurrent.futures.ThreadPoolExecutor()
 
-    def __remove_tasks_from_execution_queue(self, finished_tasks):
-        for finished_task in list(finished_tasks):
-            for t in list(self.execution_queue.keys()):
-                if self.execution_queue[t] == finished_task:
-                    del self.execution_queue[t]
+    def remove_from_execution(self, finished_task):
+        if finished_task in self.futures:
+            self.futures.remove(finished_task)
 
-    def __add_task_to_execution_queue(self, tasks):
+    def submit_for_execution(self, tasks):
         for task in tasks:
-            self.execution_queue[task] = self.executor.submit(task.execute)
+            future = self.executor.submit(task.execute, pipeline.get_required_inputs(task))
+            self.futures.add(future)
 
-    def __wait_for_any_task_to_finish(self):
-        finished_tasks, _ = concurrent.futures.wait(self.execution_queue.values(), return_when=concurrent.futures.FIRST_COMPLETED)
-        return finished_tasks
+    def execute_submitted_tasks(self):
+        first_done, _ = concurrent.futures.wait(self.futures, return_when=concurrent.futures.FIRST_COMPLETED)
+        return next(iter(first_done)) # wait return set containing exactly one element with FIRST_COMPLETED option
+
+    def is_there_tasks_to_run(self):
+        return bool(self.futures)
 
     def run_pipeline(self, pipeline):
         """Run the tasks in the pipeline respecting their dependencies, executing independent tasks in parallel."""
-        #self.futures = {} # reinit
-        self.__add_task_to_execution_queue(pipeline.get_initial_tasks())
+        self.submit_for_execution(pipeline.get_initial_tasks())
 
-        while self.execution_queue:
-            finished_tasks = self.__wait_for_any_task_to_finish()
-            self.__remove_tasks_from_execution_queue(finished_tasks)
-            self.__add_task_to_execution_queue(pipeline.get_ready_to_run_tasks())
+        while self.is_there_tasks_to_run():
+            finished_task = self.execute_submitted_tasks()
+            self.remove_from_execution(finished_task)
+            self.submit_for_execution(pipeline.get_ready_to_run_tasks())
 
 
 # Example Tasks
-def task_a():
+def task_a(inputs):
     time.sleep(1)
     return "Data from Task A"
 
-def task_b():
+def task_b(inputs):
     time.sleep(4)
     return "Data from Task B"
 
-def task_c():
+def task_c(inputs):
     time.sleep(1)
     return "Data from Task C"
 
-def task_d():
+def task_d(inputs):
     time.sleep(1)
     return "Data from Task D"
 
-def task_e():
+def task_e(inputs):
     time.sleep(1)
     return "Data from Task E"
 
