@@ -6,78 +6,86 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+class DiGraph:
+    def __init__(self):
+        self.nodes = {}
+
+    def __str__(self):
+        for node, neighbors in self.nodes.items():
+            neighbors_str = ", ".join(map(str, neighbors))
+            print(f"{node} >> {neighbors_str}")
+
+    def add_node(self, node):
+        if node not in self.nodes:
+            self.nodes[node] = set()
+
+    def add_edge(self, u, v):
+        # Add a directed edge from node u to node v
+        if u not in self.nodes:
+            self.add_node(u)
+        if v not in self.nodes:
+            self.add_node(v)
+
+        self.nodes[u].add(v)
+
+    def remove_edge(self, u, v):
+        if u in self.nodes and v in self.nodes[u]:
+            self.nodes[u].remove(v)
+
+    def remove_node(self, node):
+        # Remove a node and all edges associated with it
+        if node in self.nodes:
+            del self.nodes[node]  # Remove the node from the adjacency list
+        # Also, remove the node from all other nodes' adjacency lists
+        for u in list(self.nodes):
+            if node in self.nodes[u]:
+                self.nodes[u].remove(node)
+
+    def output_nodes(self, node):
+        if node in self.nodes:
+            return self.nodes[node]
+
+    def input_nodes(self, node):
+        return {u for u in self.nodes if node in self.nodes[u]}
+
+    def nodes_without_input(self):
+        return {node for node in self.nodes if not any(node in self.nodes[u] for u in self.nodes)}
 
 class Task:
     def __init__(self, callable):
+        self.id = callable.__name__
         self.callable = callable
-        self.name = callable.__name__
         self.started = False
         self.executed = False
         self.result = None
 
+    def __str__(self):
+        return f"{self.id}"
+
     def execute(self):
-        logger.info(f"Task STARTED {self.name}")
+        logger.info(f"Task {self.id} STARTED")
         self.started = True
         self.result = self.callable()
         self.executed = True
-        logger.info(f"Task FINISHED\tresult: {self.name}")
-
-class Node:
-    def __init__(self, value):
-        self.value = value
-        self.dependencies = []  # Nodes this node depends on
-        self.dependents = []    # Nodes that depend on this node
-
-    def __repr__(self):
-        return f"Node({self.value})"
-
-class Graph:
-    def __init__(self):
-        self.nodes = []
-
-    def create_node(self, value):
-        """Creates a new node and adds it to the graph."""
-        node = Node(value)
-        self.nodes.append(node)
-        return node
-
-    def add_edge(self, from_node, to_node):
-        """Adds a directed edge from `from_node` to `to_node`."""
-        if to_node not in from_node.dependents:
-            from_node.dependents.append(to_node)
-        if from_node not in to_node.dependencies:
-            to_node.dependencies.append(from_node)
-
-    def __lshift__(self, from_node, to_node):
-        """Overload << to add dependency from 'from_node' to 'to_node'."""
-        self.add_edge(from_node, to_node)
-
-    def __repr__(self):
-        """Return a string representation of the graph."""
-        return "\n".join(f"{node.value} -> {[n.value for n in node.dependents]}" for node in self.nodes)
-
+        logger.info(f"Task {self.id} FINISHED")
 
 class Executor:
     """Executor that runs the tasks in the DAG respecting the dependencies."""
 
     def __init__(self):
-        self.graph = Graph()
+        self.graph = DiGraph()
 
     def create_task(self, callable):
-        node = self.graph.create_node(Task(callable))
-        return node
-
-
-    # list of tasks that can be executed (i.e., tasks with no un-executed dependencies)
-    def get_ready_tasks(self):
-        return [node.value for node in self.graph.nodes if not node.dependencies]
+        task = Task(callable)
+        self.graph.add_node(task)
+        return task
 
     def set_dependency(self, node_a, node_b):
         self.graph.add_edge(node_a, node_b)
 
     def run_pipeline(self):
         """Run the tasks in the pipeline respecting their dependencies, executing independent tasks in parallel."""
-        ready_tasks = self.get_ready_tasks()
+        ready_tasks = self.graph.nodes_without_input()
 
         # execute independent tasks in parallel
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -101,10 +109,10 @@ class Executor:
                             del futures[t]
 
                     # check which dependent tasks can now run
-                    for node in self.graph.nodes:
-                        t = node.value
-                        if not t.started and all(dep.value.executed for dep in node.dependencies):
-                            futures[t] = executor.submit(t.execute)
+                    for task in self.graph.nodes:
+                        if not task.started and all(dep.executed for dep in self.graph.input_nodes(task)):
+                            futures[task] = executor.submit(task.execute)
+
 
 # Example Tasks
 def task_a():
