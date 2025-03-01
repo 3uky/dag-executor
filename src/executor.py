@@ -2,7 +2,6 @@ import concurrent.futures
 import logging
 import time
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -74,6 +73,8 @@ class Executor:
 
     def __init__(self):
         self.graph = DiGraph()
+        self.futures = {}
+        self.executor = concurrent.futures.ThreadPoolExecutor()
 
     def create_task(self, callable):
         task = Task(callable)
@@ -83,35 +84,44 @@ class Executor:
     def set_dependency(self, node_a, node_b):
         self.graph.add_edge(node_a, node_b)
 
+    def __get_tasks(self):
+        return self.graph.nodes
+
+    def __are_all_required_inputs_available(self, task):
+        return all(input.executed for input in self.graph.input_nodes(task))
+
+    def __remove_tasks_from_execution_queue(self, finished_tasks):
+        for task in list(finished_tasks):
+            for t in list(self.futures.keys()):
+                if self.futures[t] == task:
+                    del self.futures[t]
+
+    def __add_ready_to_run_tasks_to_execution_queue(self):
+        for task in self.__get_tasks():
+            if not task.started and self.__are_all_required_inputs_available(task):
+                self.__add_task_to_execution_queue(task)
+
+
+    def __add_task_to_execution_queue(self, task):
+        self.futures[task] = self.executor.submit(task.execute)
+
     def run_pipeline(self):
         """Run the tasks in the pipeline respecting their dependencies, executing independent tasks in parallel."""
+
+        #self.futures = {} # reinit
+
         ready_tasks = self.graph.nodes_without_input()
+        for task in ready_tasks:
+            if not task.executed:
+                self.__add_task_to_execution_queue(task)
 
-        # execute independent tasks in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = {}
+        # Wait for the tasks to finish and check for dependent tasks
+        while self.futures:
+            # Wait for any task to finish
+            finished_tasks, _ = concurrent.futures.wait(self.futures.values(), return_when=concurrent.futures.FIRST_COMPLETED)
 
-            # Queue tasks for execution
-            for task in ready_tasks:
-                if not task.executed:
-                    futures[task] = executor.submit(task.execute)
-
-            # Wait for the tasks to finish and check for dependent tasks
-            while futures:
-                # Wait for any task to finish
-                done, _ = concurrent.futures.wait(futures.values(), return_when=concurrent.futures.FIRST_COMPLETED)
-
-                # For each finished task, check if dependent tasks can now be executed
-                for task in list(done):
-                    # remove the task from the futures dictionary
-                    for t in list(futures.keys()):
-                        if futures[t] == task:
-                            del futures[t]
-
-                    # check which dependent tasks can now run
-                    for task in self.graph.nodes:
-                        if not task.started and all(dep.executed for dep in self.graph.input_nodes(task)):
-                            futures[task] = executor.submit(task.execute)
+            self.__remove_tasks_from_execution_queue(finished_tasks)
+            self.__add_ready_to_run_tasks_to_execution_queue()
 
 
 # Example Tasks
