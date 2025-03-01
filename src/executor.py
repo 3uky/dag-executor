@@ -68,13 +68,9 @@ class Task:
         self.executed = True
         logger.info(f"Task {self.id} FINISHED")
 
-class Executor:
-    """Executor that runs the tasks in the DAG respecting the dependencies."""
-
+class Pipeline:
     def __init__(self):
         self.graph = DiGraph()
-        self.futures = {}
-        self.executor = concurrent.futures.ThreadPoolExecutor()
 
     def create_task(self, callable):
         task = Task(callable)
@@ -84,44 +80,51 @@ class Executor:
     def set_dependency(self, node_a, node_b):
         self.graph.add_edge(node_a, node_b)
 
-    def __get_tasks(self):
+    def get_initial_tasks(self):
+        return {t for t in self.graph.nodes_without_input() if not t.executed}
+
+    def get_ready_to_run_tasks(self):
+        return {t for t in self.get_tasks() if not t.started and self.__are_all_required_inputs_available(t)}
+
+    def get_required_inputs(self, task):
+        return {input.result for input in self.graph.input_nodes(task)}
+
+    def get_tasks(self):
         return self.graph.nodes
 
     def __are_all_required_inputs_available(self, task):
         return all(input.executed for input in self.graph.input_nodes(task))
 
+class Executor:
+    """Executor that runs the tasks in the DAG respecting the dependencies."""
+
+    def __init__(self):
+        self.execution_queue = {}
+        self.executor = concurrent.futures.ThreadPoolExecutor()
+
     def __remove_tasks_from_execution_queue(self, finished_tasks):
-        for task in list(finished_tasks):
-            for t in list(self.futures.keys()):
-                if self.futures[t] == task:
-                    del self.futures[t]
+        for finished_task in list(finished_tasks):
+            for t in list(self.execution_queue.keys()):
+                if self.execution_queue[t] == finished_task:
+                    del self.execution_queue[t]
 
-    def __add_ready_to_run_tasks_to_execution_queue(self):
-        for task in self.__get_tasks():
-            if not task.started and self.__are_all_required_inputs_available(task):
-                self.__add_task_to_execution_queue(task)
+    def __add_task_to_execution_queue(self, tasks):
+        for task in tasks:
+            self.execution_queue[task] = self.executor.submit(task.execute)
 
+    def __wait_for_any_task_to_finish(self):
+        finished_tasks, _ = concurrent.futures.wait(self.execution_queue.values(), return_when=concurrent.futures.FIRST_COMPLETED)
+        return finished_tasks
 
-    def __add_task_to_execution_queue(self, task):
-        self.futures[task] = self.executor.submit(task.execute)
-
-    def run_pipeline(self):
+    def run_pipeline(self, pipeline):
         """Run the tasks in the pipeline respecting their dependencies, executing independent tasks in parallel."""
-
         #self.futures = {} # reinit
+        self.__add_task_to_execution_queue(pipeline.get_initial_tasks())
 
-        ready_tasks = self.graph.nodes_without_input()
-        for task in ready_tasks:
-            if not task.executed:
-                self.__add_task_to_execution_queue(task)
-
-        # Wait for the tasks to finish and check for dependent tasks
-        while self.futures:
-            # Wait for any task to finish
-            finished_tasks, _ = concurrent.futures.wait(self.futures.values(), return_when=concurrent.futures.FIRST_COMPLETED)
-
+        while self.execution_queue:
+            finished_tasks = self.__wait_for_any_task_to_finish()
             self.__remove_tasks_from_execution_queue(finished_tasks)
-            self.__add_ready_to_run_tasks_to_execution_queue()
+            self.__add_task_to_execution_queue(pipeline.get_ready_to_run_tasks())
 
 
 # Example Tasks
@@ -146,21 +149,22 @@ def task_e():
     return "Data from Task E"
 
 if __name__ == '__main__':
+    pipeline = Pipeline()
     executor = Executor()
 
     # Create tasks
-    a = executor.create_task(task_a)
-    b = executor.create_task(task_b)
-    c = executor.create_task(task_c)
-    d = executor.create_task(task_d)
-    e = executor.create_task(task_e)
+    a = pipeline.create_task(task_a)
+    b = pipeline.create_task(task_b)
+    c = pipeline.create_task(task_c)
+    d = pipeline.create_task(task_d)
+    e = pipeline.create_task(task_e)
 
     # Set task dependencies
-    executor.set_dependency(a, b)  # task_b depends on task_a
-    executor.set_dependency(a, c)  # task_c depends on task_a
-    executor.set_dependency(c, d)  # task_d depends on task_c
-    executor.set_dependency(d, e)  # task_e depends on task_d
-    executor.set_dependency(b, e)  # task_e depends on task_b
+    pipeline.set_dependency(a, b)  # task_b depends on task_a
+    pipeline.set_dependency(a, c)  # task_c depends on task_a
+    pipeline.set_dependency(c, d)  # task_d depends on task_c
+    pipeline.set_dependency(d, e)  # task_e depends on task_d
+    pipeline.set_dependency(b, e)  # task_e depends on task_b
 
     # Run the pipeline
-    executor.run_pipeline()
+    executor.run_pipeline(pipeline)
