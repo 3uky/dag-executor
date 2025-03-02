@@ -3,52 +3,11 @@ import logging
 import time
 from enum import Enum
 
+from digraph import DiGraph
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-class DiGraph:
-    def __init__(self):
-        self.nodes = {}
-
-    def __str__(self):
-        for node, neighbors in self.nodes.items():
-            neighbors_str = ", ".join(map(str, neighbors))
-            print(f"{node} -> {neighbors_str}")
-
-    def add_node(self, node):
-        if node not in self.nodes:
-            self.nodes[node] = set()
-
-    def add_edge(self, u, v):
-        if u not in self.nodes:
-            self.add_node(u)
-        if v not in self.nodes:
-            self.add_node(v)
-
-        self.nodes[u].add(v)
-
-    def remove_edge(self, u, v):
-        if u in self.nodes and v in self.nodes[u]:
-            self.nodes[u].remove(v)
-
-    def remove_node(self, node):
-        # Remove a node and all edges associated with it
-        if node in self.nodes:
-            del self.nodes[node]  # Remove the node from the adjacency list
-        # Also, remove the node from all other nodes' adjacency lists
-        for u in list(self.nodes):
-            if node in self.nodes[u]:
-                self.nodes[u].remove(node)
-
-    def get_output_nodes(self, node):
-        if node in self.nodes:
-            return self.nodes[node]
-
-    def get_input_nodes(self, node):
-        return [u for u in self.nodes if node in self.nodes[u]]
-
-    def get_nodes_without_input_edge(self):
-        return [node for node in self.nodes if not any(node in self.nodes[u] for u in self.nodes)]
 
 class TaskState(Enum):
     NOT_STARTED = 0
@@ -120,7 +79,7 @@ class Executor:
         self.futures = set()
         self.executor = concurrent.futures.ThreadPoolExecutor()
 
-    def submit_for_execution(self, tasks):
+    def submit_for_execution(self, tasks, pipeline):
         for task in tasks:
             future = self.executor.submit(task.execute, pipeline.get_required_inputs(task))
             self.futures.add(future)
@@ -138,52 +97,9 @@ class Executor:
 
     def run_pipeline(self, pipeline):
         """Run the tasks in the pipeline respecting their dependencies, executing independent tasks in parallel."""
-        self.submit_for_execution(pipeline.get_initial_tasks())
+        self.submit_for_execution(pipeline.get_initial_tasks(), pipeline)
 
         while self.is_there_tasks_to_run():
             finished_task = self.execute_submitted_tasks()
             self.remove_from_execution(finished_task)
-            self.submit_for_execution(pipeline.get_ready_to_run_tasks())
-
-
-# Example Tasks
-def task_a(*args, **kwargs):
-    time.sleep(1)
-    return "Data from Task A"
-
-def task_b(*args, **kwargs):
-    time.sleep(4)
-    return "Data from Task B"
-
-def task_c(*args, **kwargs):
-    time.sleep(1)
-    return "Data from Task C"
-
-def task_d(*args, **kwargs):
-    time.sleep(1)
-    return "Data from Task D"
-
-def task_e(*args, **kwargs):
-    time.sleep(1)
-    return "Data from Task E"
-
-if __name__ == '__main__':
-    pipeline = Pipeline()
-    executor = Executor()
-
-    # Create tasks
-    a = pipeline.create_task(task_a)
-    b = pipeline.create_task(task_b)
-    c = pipeline.create_task(task_c)
-    d = pipeline.create_task(task_d)
-    e = pipeline.create_task(task_e)
-
-    # Set task dependencies
-    pipeline.set_dependency(a, b)  # task_b depends on task_a
-    pipeline.set_dependency(a, c)  # task_c depends on task_a
-    pipeline.set_dependency(c, d)  # task_d depends on task_c
-    pipeline.set_dependency(d, e)  # task_e depends on task_d
-    pipeline.set_dependency(b, e)  # task_e depends on task_b
-
-    # Run the pipeline
-    executor.run_pipeline(pipeline)
+            self.submit_for_execution(pipeline.get_ready_to_run_tasks(), pipeline)
