@@ -45,10 +45,10 @@ class DiGraph:
             return self.nodes[node]
 
     def get_input_nodes(self, node):
-        return {u for u in self.nodes if node in self.nodes[u]}
+        return [u for u in self.nodes if node in self.nodes[u]]
 
     def get_nodes_without_input_edge(self):
-        return {node for node in self.nodes if not any(node in self.nodes[u] for u in self.nodes)}
+        return [node for node in self.nodes if not any(node in self.nodes[u] for u in self.nodes)]
 
 class TaskState(Enum):
     NOT_STARTED = 0
@@ -97,10 +97,10 @@ class Pipeline:
         return self.graph.get_input_nodes(node)
 
     def get_initial_tasks(self):
-        return {task for task in self.get_tasks_without_dependencies() if task.is_not_started()}
+        return [task for task in self.get_tasks_without_dependencies() if task.is_not_started()]
 
     def get_ready_to_run_tasks(self):
-        return {task for task in self.get_tasks() if task.is_not_started() and self.are_all_required_inputs_available(task)}
+        return [task for task in self.get_tasks() if task.is_not_started() and self.are_all_required_inputs_available(task)]
 
     def get_tasks(self):
         return self.graph.nodes
@@ -109,7 +109,7 @@ class Pipeline:
         return self.graph.get_nodes_without_input_edge()
 
     def get_required_inputs(self, task):
-        return {dependent_task.result for dependent_task in self.get_dependencies(task)}
+        return [dependent_task.result for dependent_task in self.get_dependencies(task)]
 
     def are_all_required_inputs_available(self, task):
         return all(dependent_task.is_finished() for dependent_task in self.get_dependencies(task))
