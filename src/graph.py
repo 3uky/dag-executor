@@ -1,4 +1,4 @@
-class DiGraph:
+class DirectAcyclicGraph:
     def __init__(self):
         self.nodes = {}
 
