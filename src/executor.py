@@ -12,13 +12,14 @@ class Executor:
             future = self.executor.submit(task.execute, inputs)
             self.futures.add(future)
 
-    def remove_from_execution(self, finished_task):
-        if finished_task in self.futures:
-            self.futures.remove(finished_task)
+    def remove_from_execution(self, finished_tasks):
+        for finished_task in finished_tasks:
+            if finished_task in self.futures:
+                self.futures.remove(finished_task)
 
     def execute_submitted_tasks(self):
         done, _ = concurrent.futures.wait(self.futures, return_when=concurrent.futures.FIRST_COMPLETED)
-        return next(iter(done)) # wait return set containing exactly one element with FIRST_COMPLETED option
+        return done
 
     def is_there_tasks_to_run(self):
         return bool(self.futures)
@@ -29,7 +30,7 @@ class Executor:
             self.submit_for_execution(task)
 
         while self.is_there_tasks_to_run():
-            finished_task = self.execute_submitted_tasks()
-            self.remove_from_execution(finished_task)
+            finished_tasks = self.execute_submitted_tasks()
+            self.remove_from_execution(finished_tasks)
             for task in pipeline.get_ready_to_run_tasks():
                 self.submit_for_execution(task, pipeline.get_required_inputs(task))
