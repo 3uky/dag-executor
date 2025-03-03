@@ -1,4 +1,6 @@
 """
+Test Example
+
 This example processes a random 2D NumPy array and computes statistics before and
 after normalization.
 Processing Steps:
@@ -20,7 +22,7 @@ import numpy as np
 
 from executor import *
 
-# Task definitions
+# Tasks definitions
 def generate_random_data():
     """Creates a 2D array with random values."""
     random_data = np.random.randint(0, 10, size=(3, 4))
@@ -40,8 +42,7 @@ def normalize_array(random_data):
 
 def compute_normalized_stats(normalized_array):
     """Computes min, max, mean, std of the normalized array."""
-    normalized_stats = (
-    np.min(normalized_array), np.max(normalized_array), np.mean(normalized_array), np.std(normalized_array))
+    normalized_stats = (np.min(normalized_array), np.max(normalized_array), np.mean(normalized_array), np.std(normalized_array))
     return normalized_stats
 
 def merge_and_print_stats(raw_array, normalized_array):
