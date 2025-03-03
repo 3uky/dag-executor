@@ -1,6 +1,6 @@
 import pytest
 
-from src.executor import *
+from task import *
 
 def callable_example(*args):
     pass
