@@ -29,7 +29,7 @@ class Pipeline:
         return self.graph.get_nodes_without_input_edge()
 
     def get_required_inputs(self, task):
-        return [dependent_task.result for dependent_task in self.get_dependencies(task)]
+        return [dependent_task.result for dependent_task in self.get_dependencies(task) if dependent_task.result is not None]
 
     def are_inputs_available(self, task):
         return all(dependent_task.is_finished() for dependent_task in self.get_dependencies(task))

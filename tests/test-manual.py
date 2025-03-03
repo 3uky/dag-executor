@@ -7,25 +7,20 @@ from executor import *
 class TestManual:
     def skip_test_parallel_execution_order_of_entry_task(self):
         # GIVEN
-        def task_a(*args):
+        def task_a():
             time.sleep(1)
-            return "Data from Task A"
 
-        def task_b(*args):
+        def task_b():
             time.sleep(4)
-            return "Data from Task B"
 
-        def task_c(*args):
+        def task_c():
             time.sleep(1)
-            return "Data from Task C"
 
-        def task_d(*args):
+        def task_d():
             time.sleep(1)
-            return "Data from Task D"
 
-        def task_e(*args):
+        def task_e():
             time.sleep(1)
-            return "Data from Task E"
 
         executor = Executor()
         pipeline = Pipeline()
@@ -51,31 +46,27 @@ class TestManual:
 
     def test_result_propagation_of_entry_task(self):
         # GIVEN
-        def generate_random_data(*args):
+        def generate_random_data():
             random_data = np.random.randint(0, 10, size=(3, 4))
-
             return random_data
 
-        def compute_raw_stats(*args):
-            random_data = args[0][0]
+        def compute_raw_stats(random_data):
             raw_stats = (np.min(random_data), np.max(random_data), np.mean(random_data), np.std(random_data))
             return raw_stats
 
-        def normalize_array(*args):
-            random_data = args[0][0]
+        def normalize_array(random_data):
             min_value = np.min(random_data)
             max_value = np.max(random_data)
             normalized_array = (random_data - min_value) / (max_value - min_value)
             return normalized_array
 
-        def compute_normalized_stats(*args):
-            normalized_array = args[0][0]
+        def compute_normalized_stats(normalized_array):
             normalized_stats = (np.min(normalized_array), np.max(normalized_array), np.mean(normalized_array), np.std(normalized_array))
             return normalized_stats
 
-        def merge_and_print_stats(*args):
-            raw_min, raw_max, raw_mean, raw_std = args[0][0]
-            norm_min, norm_max, norm_mean, norm_std = args[0][1]
+        def merge_and_print_stats(raw_array, normalized_array):
+            raw_min, raw_max, raw_mean, raw_std = raw_array
+            norm_min, norm_max, norm_mean, norm_std = normalized_array
 
             stats = {
                 'raw min': raw_min,

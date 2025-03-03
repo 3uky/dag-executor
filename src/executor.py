@@ -8,7 +8,7 @@ class Executor:
         self.futures = set()
         self.executor = concurrent.futures.ThreadPoolExecutor()
 
-    def submit_for_execution(self, task, inputs=None):
+    def submit_for_execution(self, task, inputs=()):
             future = self.executor.submit(task.execute, inputs)
             self.futures.add(future)
 
@@ -32,4 +32,4 @@ class Executor:
             finished_task = self.execute_submitted_tasks()
             self.remove_from_execution(finished_task)
             for task in pipeline.get_ready_to_run_tasks():
-                self.submit_for_execution(task, inputs=pipeline.get_required_inputs(task))
+                self.submit_for_execution(task, pipeline.get_required_inputs(task))
