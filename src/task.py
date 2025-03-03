@@ -30,8 +30,10 @@ class Task:
         return self.state == TaskState.FINISHED
 
     def execute(self, inputs=None):
-        logger.info(f"Task {self.id} STARTED\tinputs: {inputs}")
+        logger.info(f"Task {self.id} STARTED")
+        #logger.info(f"inputs: {inputs}")
         self.state = TaskState.STARTED
         self.result = self.callable(inputs)
         self.state = TaskState.FINISHED
         logger.info(f"Task {self.id} FINISHED")
+        #logger.info(f"outputs: {self.result}")
