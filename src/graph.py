@@ -34,6 +34,9 @@ class DirectAcyclicGraph:
             if node in self.nodes[u]:
                 self.nodes[u].remove(node)
 
+    def get_nodes(self):
+        return self.nodes.keys()
+
     def get_output_nodes(self, node):
         if node in self.nodes:
             return self.nodes[node]
@@ -43,3 +46,41 @@ class DirectAcyclicGraph:
 
     def get_nodes_without_input_edge(self):
         return [node for node in self.nodes if not any(node in self.nodes[u] for u in self.nodes)]
+
+    def is_acyclic(self):
+        """Detects whether the graph has a cycle. Returns True if the graph is acyclic, otherwise False."""
+
+        # State tracking for DFS
+        UNVISITED = 0
+        VISITING = 1
+        VISITED = 2
+
+        state = {node: UNVISITED for node in self.nodes}
+
+        def dfs(state):
+            if state[node] == VISITING:
+                # Cycle detected
+                return False
+            if state[node] == VISITED:
+                # Already fully processed node
+                return True
+
+            # Mark the node as visiting (part of the current recursion stack)
+            state[node] = VISITING
+
+            # Recursively visit all adjacent nodes
+            for neighbor in self.nodes.get(node, []):
+                if not dfs(neighbor):
+                    return False
+
+            # Mark the node as visited (fully processed)
+            state[node] = VISITED
+            return True
+
+        # Run DFS for every node in the graph
+        for node in self.nodes:
+            if state[node] == UNVISITED:
+                if not dfs(node):
+                    return False  # If any cycle is detected
+
+        return True  # If no cycles are detected
