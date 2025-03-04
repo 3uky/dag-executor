@@ -1,9 +1,11 @@
 from graph import DirectAcyclicGraph
 from task import Task
+from executor import Executor
 
 class Pipeline:
     def __init__(self):
         self.graph = DirectAcyclicGraph()
+        self.executor = Executor()
 
     def create_task(self, callable):
         task = Task(callable)
@@ -27,3 +29,19 @@ class Pipeline:
 
     def get_task_inputs(self, task):
         return [dependent_task.result for dependent_task in self.get_dependencies(task) if dependent_task.result is not None]
+
+    def initial_check(self):
+        if not self.graph.is_acyclic():
+            raise ValueError("The graph has cycles. Cannot execute pipeline.")
+
+    def run(self):
+        self.initial_check()
+
+        for task in self.get_ready_to_run_tasks():
+            self.executor.submit_for_execution(task, self.get_task_inputs(task))
+
+        while self.executor.has_submitted_tasks():
+            self.executor.execute_submitted_tasks()
+
+            for task in self.get_ready_to_run_tasks():
+                self.executor.submit_for_execution(task, self.get_task_inputs(task))

@@ -2,7 +2,7 @@ import pytest
 import time
 import numpy as np
 
-from executor import *
+from pipeline import Pipeline
 
 class TestSystem:
     def test_parallel_execution_order(self):
@@ -22,7 +22,6 @@ class TestSystem:
         def task_e():
             time.sleep(1)
 
-        executor = Executor()
         pipeline = Pipeline()
 
         # Create tasks
@@ -40,7 +39,7 @@ class TestSystem:
         pipeline.set_dependency(b, e)
 
         # Run pipeline
-        executor.run_pipeline(pipeline)
+        pipeline.run()
 
         # Check log output
 
@@ -82,7 +81,6 @@ class TestSystem:
             for key, value in stats.items():
                 print(f"{key}: {value}")
 
-        executor = Executor()
         pipeline = Pipeline()
 
         # Create tasks
@@ -100,6 +98,6 @@ class TestSystem:
         pipeline.set_dependency(B, E)
 
         # Run pipeline
-        executor.run_pipeline(pipeline)
+        pipeline.run()
 
         # Check log output

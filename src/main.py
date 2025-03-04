@@ -20,7 +20,7 @@ Graph TD;
 
 import numpy as np
 
-from executor import *
+from pipeline import Pipeline
 
 # Tasks definitions
 def generate_random_data():
@@ -67,7 +67,6 @@ def merge_and_print_stats(raw_array, normalized_array):
 
 def main():
     # Initialization
-    executor = Executor()
     pipeline = Pipeline()
 
     # Create tasks
@@ -85,7 +84,8 @@ def main():
     pipeline.set_dependency(b, e)
 
     # Execute pipeline
-    executor.run_pipeline(pipeline)
+    #executor.run_pipeline(pipeline)
+    pipeline.run()
 
 if __name__ == "__main__":
     main()
