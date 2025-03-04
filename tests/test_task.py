@@ -16,14 +16,14 @@ class TestTask:
     def test_task_state_transitions(self):
         # initially, the task is in NOT_STARTED state
         task = Task(sample_task)
-        assert task.is_not_started()
+        assert task.is_pending()
         assert not task.is_running()
         assert not task.is_finished()
 
         # after calling execute, the state should change to STARTED and then FINISHED
         task.execute(5)
 
-        assert not task.is_not_started()
+        assert not task.is_pending()
         assert not task.is_running()
         assert task.is_finished()
 
@@ -35,7 +35,7 @@ class TestTask:
     def test_task_is_not_started_after_execution(self):
         task = Task(sample_task)
         task.execute(5)
-        assert not task.is_not_started()
+        assert not task.is_pending()
 
     def test_task_is_finished_after_execution(self):
         task = Task(sample_task)
