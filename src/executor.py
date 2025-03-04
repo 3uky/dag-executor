@@ -25,11 +25,11 @@ class Executor:
 
     def run_pipeline(self, pipeline):
         """Run the tasks in the pipeline respecting their dependencies, executing independent tasks in parallel."""
-        for task in pipeline.get_initial_tasks():
+        for task in pipeline.get_ready_to_run_tasks():
             self.submit_for_execution(task)
 
         while self.is_there_tasks_to_run():
             finished_tasks = self.execute_submitted_tasks()
             self.remove_from_execution(finished_tasks)
             for task in pipeline.get_ready_to_run_tasks():
-                self.submit_for_execution(task, pipeline.get_required_inputs(task))
+                self.submit_for_execution(task, pipeline.get_task_inputs(task))
