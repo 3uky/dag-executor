@@ -37,11 +37,14 @@ class Pipeline:
     def run(self):
         self.initial_check()
 
-        for task in self.get_ready_to_run_tasks():
-            self.executor.submit_for_execution(task, self.get_task_inputs(task))
+        self.submit_ready_tasks() # first tasks to run are without dependencies/inputs
 
-        while self.executor.has_submitted_tasks():
+        while self.executor.has_tasks_to_do():
             self.executor.execute_submitted_tasks()
+            self.submit_ready_tasks()
 
-            for task in self.get_ready_to_run_tasks():
-                self.executor.submit_for_execution(task, self.get_task_inputs(task))
+    def submit_ready_tasks(self):
+        for task in self.get_ready_to_run_tasks():
+            task_executable = task.execute
+            task_inputs = self.get_task_inputs(task)
+            self.executor.submit_for_execution(task_executable, task_inputs)

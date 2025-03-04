@@ -1,13 +1,13 @@
 import concurrent.futures
 
 class Executor:
-    """Executor that runs the tasks in the DAG respecting the dependencies."""
+    """Responsible for executing the assigned tasks. It maintains a pool of workers/futures."""
     def __init__(self):
         self.futures = set()
         self.executor = concurrent.futures.ThreadPoolExecutor()
 
-    def submit_for_execution(self, task, inputs=()):
-            future = self.executor.submit(task.execute, *inputs)
+    def submit_for_execution(self, executable, inputs=()):
+            future = self.executor.submit(executable, *inputs)
             self.futures.add(future)
 
     def remove_from_execution(self, finished_tasks):
@@ -18,7 +18,5 @@ class Executor:
         done, _ = concurrent.futures.wait(self.futures, return_when=concurrent.futures.FIRST_COMPLETED)
         self.remove_from_execution(done)
 
-    def has_submitted_tasks(self):
+    def has_tasks_to_do(self):
         return bool(self.futures)
-
-
