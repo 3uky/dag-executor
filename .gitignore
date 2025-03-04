@@ -173,3 +173,4 @@ cython_debug/
 # personal
 TBD.md
 *.bac
+all_in_one.py
