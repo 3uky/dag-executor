@@ -4,8 +4,8 @@ import numpy as np
 
 from executor import *
 
-class TestManual:
-    def skip_test_parallel_execution_order_of_entry_task(self):
+class TestSystem:
+    def test_parallel_execution_order(self):
         # GIVEN
         def task_a():
             time.sleep(1)
@@ -33,16 +33,16 @@ class TestManual:
         e = pipeline.create_task(task_e)
 
         # Set task dependencies
-        pipeline.set_dependency(a, b)  # task_b depends on task_a
-        pipeline.set_dependency(a, c)  # task_c depends on task_a
-        pipeline.set_dependency(c, d)  # task_d depends on task_c
-        pipeline.set_dependency(d, e)  # task_e depends on task_d
-        pipeline.set_dependency(b, e)  # task_e depends on task_b
+        pipeline.set_dependency(a, b)
+        pipeline.set_dependency(a, c)
+        pipeline.set_dependency(c, d)
+        pipeline.set_dependency(d, e)
+        pipeline.set_dependency(b, e)
 
-        # WHEN
+        # Run pipeline
         executor.run_pipeline(pipeline)
 
-        # THEN - check log output
+        # Check log output
 
     def test_result_propagation_of_entry_task(self):
         # GIVEN
@@ -78,7 +78,9 @@ class TestManual:
                 'normalized mean': norm_mean,
                 'normalized std': norm_std
             }
-            print(f"\nStats:\n{stats}")
+
+            for key, value in stats.items():
+                print(f"{key}: {value}")
 
         executor = Executor()
         pipeline = Pipeline()
@@ -97,7 +99,7 @@ class TestManual:
         pipeline.set_dependency(D, E)
         pipeline.set_dependency(B, E)
 
-        # WHEN
+        # Run pipeline
         executor.run_pipeline(pipeline)
 
-        # THEN - check log output
+        # Check log output

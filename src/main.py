@@ -71,18 +71,18 @@ def main():
     pipeline = Pipeline()
 
     # Create tasks
-    A = pipeline.create_task(generate_random_data)
-    B = pipeline.create_task(compute_raw_stats)
-    C = pipeline.create_task(normalize_array)
-    D = pipeline.create_task(compute_normalized_stats)
-    E = pipeline.create_task(merge_and_print_stats)
+    a = pipeline.create_task(generate_random_data)
+    b = pipeline.create_task(compute_raw_stats)
+    c = pipeline.create_task(normalize_array)
+    d = pipeline.create_task(compute_normalized_stats)
+    e = pipeline.create_task(merge_and_print_stats)
 
     # Set task dependencies
-    pipeline.set_dependency(A, B)
-    pipeline.set_dependency(A, C)
-    pipeline.set_dependency(C, D)
-    pipeline.set_dependency(D, E)
-    pipeline.set_dependency(B, E)
+    pipeline.set_dependency(a, b)
+    pipeline.set_dependency(a, c)
+    pipeline.set_dependency(c, d)
+    pipeline.set_dependency(d, e)
+    pipeline.set_dependency(b, e)
 
     # Execute pipeline
     executor.run_pipeline(pipeline)
