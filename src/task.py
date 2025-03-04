@@ -29,11 +29,11 @@ class Task:
     def is_finished(self):
         return self.state == TaskState.FINISHED
 
-    def execute(self, inputs):
+    def execute(self, *args):
         logger.info(f"Task {self.id} STARTED")
         #logger.info(f"inputs: {inputs}")
         self.state = TaskState.STARTED
-        self.result = self.callable(*inputs)
+        self.result = self.callable(*args)
         self.state = TaskState.FINISHED
         logger.info(f"Task {self.id} FINISHED")
         #logger.info(f"outputs: {self.result}")
