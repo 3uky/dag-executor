@@ -57,7 +57,7 @@ class DirectAcyclicGraph:
 
         state = {node: UNVISITED for node in self.nodes}
 
-        def dfs(state):
+        def dfs(node):
             if state[node] == VISITING:
                 # Cycle detected
                 return False
