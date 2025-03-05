@@ -45,6 +45,5 @@ class Pipeline:
 
     def submit_ready_tasks(self):
         for task in self.get_ready_to_run_tasks():
-            task_executable = task.execute
-            task_inputs = self.get_task_inputs(task)
-            self.executor.submit_for_execution(task_executable, task_inputs)
+            inputs = self.get_task_inputs(task)
+            self.executor.submit_for_execution(task, inputs)
