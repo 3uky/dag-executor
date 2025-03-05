@@ -5,26 +5,12 @@ import numpy as np
 from pipeline import Pipeline
 
 class TestSystem:
-    def test_simple_task_dependency_without_inputs(self):
-        pipeline = Pipeline()
-
-        # Create tasks
-        a = pipeline.create_task(lambda: None)
-        b = pipeline.create_task(lambda: None)
-
-        # Set task dependencies
-        pipeline.set_dependency(a, b)
-
-        # Run pipeline
-        pipeline.run()
-
-
     def test_simple_task_with_data_propagation(self):
         pipeline = Pipeline()
 
         # Create tasks
         a = pipeline.create_task(lambda: "Hello")
-        b = pipeline.create_task(lambda a: print(f"{a}, World!"))
+        b = pipeline.create_task(lambda a: f"{a}, World!")
 
         # Set task dependencies
         pipeline.set_dependency(a, b)
@@ -32,18 +18,20 @@ class TestSystem:
         # Run pipeline
         pipeline.run()
 
+        assert b.get_result() == "Hello, World!"
+
     def test_simple_task_synchronization(self):
         pipeline = Pipeline()
 
         def a():
-            return "Hello"
+            return 1
         def b():
-            return ", "
+            return 10
         def c():
-            return "World!"
+            return 100
 
         def d(a, b, c):
-            print(f"{a}{b}{c}")
+            return a + b + c
 
         # Create tasks
         a = pipeline.create_task(a)
@@ -58,6 +46,8 @@ class TestSystem:
 
         # Run pipeline
         pipeline.run()
+
+        assert d.get_result() == 111
 
     def test_parallel_execution_order(self):
         # GIVEN
@@ -95,7 +85,23 @@ class TestSystem:
         # Run pipeline
         pipeline.run()
 
-        # Check log output
+        # check order from logs
+
+
+    def test_simple_task_dependency_without_data_propagation(self):
+        pipeline = Pipeline()
+
+        # Create tasks
+        a = pipeline.create_task(lambda: None)
+        b = pipeline.create_task(lambda: None)
+
+        # Set task dependencies
+        pipeline.set_dependency(a, b)
+
+        # Run pipeline
+        pipeline.run()
+
+        # check order from logs (expected order is a, b)
 
     def test_result_propagation_of_entry_task(self):
         # GIVEN
@@ -154,4 +160,4 @@ class TestSystem:
         # Run pipeline
         pipeline.run()
 
-        # Check log output
+        # Check log output / stdout (stats)

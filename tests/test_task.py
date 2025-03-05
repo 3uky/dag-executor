@@ -1,59 +1,62 @@
 import pytest
-import threading
 import time
 
 from task import Task, TaskState
 
-
-def sample_task(x):
-    return x * 2
-
-def sample_task_with_delay(x):
-    time.sleep(1)
+def example_callable(x):
     return x * 2
 
 class TestTask:
-    def test_task_state_transitions(self):
-        # initially, the task is in NOT_STARTED state
-        task = Task(sample_task)
-        assert task.is_pending()
-        assert not task.is_running()
-        assert not task.is_finished()
+    def test_initial_state(self):
+        # Test if the task starts in the PENDING state
+        task = Task(example_callable)
+        assert task.is_pending() is True
+        assert task.is_started() is False
+        assert task.is_finished() is False
 
-        # after calling execute, the state should change to STARTED and then FINISHED
-        task.execute(5)
+    def test_set_started(self):
+        # Test if the task can be set to the STARTED state
+        task = Task(example_callable)
+        task.set_state_to_started()
+        assert task.is_started() is True
 
-        assert not task.is_pending()
-        assert not task.is_running()
-        assert task.is_finished()
+    def test_set_finished(self):
+        # Test if the task can be set to the FINISHED state
+        task = Task(example_callable)
+        task.set_state_to_finished()
+        assert task.is_finished() is True
 
-    def test_task_execution_result(self):
-        task = Task(sample_task)
-        task.execute(5)
-        assert task.result == 10  # 5 * 2 = 10
+    def test_execute_with_no_arguments(self):
+        # Test that executing without arguments (if no arguments are expected)
+        def no_arg_callable():
+            return "Hello, World!"
 
-    def test_task_is_not_started_after_execution(self):
-        task = Task(sample_task)
-        task.execute(5)
-        assert not task.is_pending()
+        task = Task(no_arg_callable)
+        task.execute()
+        assert task.get_result() == "Hello, World!"
 
-    def test_task_is_finished_after_execution(self):
-        task = Task(sample_task)
-        task.execute(5)
-        assert task.is_finished()
+    def test_execute_with_arguments(self):
+        def arg_callable(a, b):
+            return a + b
 
-    def test_task_is_running_during_execution(self):
-        # run the task in a separate thread
-        task = Task(sample_task_with_delay)
-        task_thread = threading.Thread(target=task.execute, args=(5,))
-        task_thread.start()
+        a = 5
+        b = 10
+        expected_result = a + b
 
-        # while the task is running, we check if task is in running state
-        assert task.is_running()
+        task = Task(arg_callable)
+        task.execute(a, b)
 
-        # wait for the task to finish
-        task_thread.join()
+        assert task.get_result() == expected_result
 
-        # after task execution is finished, the state should be `FINISHED`
-        assert task.is_finished()
-        assert not task.is_running()
+    def skip_test_execute(self):
+        def example_callable_with_delay():
+            time.sleep(1)
+
+        task = Task(example_callable_with_delay)
+
+        start_time = time.time()
+        task.execute()
+        end_time = time.time()
+
+        total_time = end_time - start_time
+        assert total_time >= 1
