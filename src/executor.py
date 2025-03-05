@@ -7,31 +7,22 @@ class Executor:
         self.executor = concurrent.futures.ThreadPoolExecutor()
 
     def submit_for_execution(self, task, inputs=()):
-            task.set_submitted()
+            task.set_state_to_started()
             future = self.executor.submit(task.execute, *inputs)
             self.futures[future] = task
 
-    def remove_from_execution(self, finished_futures):
+    def remove_finished_futures(self, finished_futures):
         for finished_future in finished_futures:
             del self.futures[finished_future]
 
-    def execute_submitted_tasks(self):
-        self.set_state_to_started_for_all_submitted_tasks()
-        done = self.execute_and_wait_until_something_finish()
+    def wait_for_task_finish(self):
+        done, _ = concurrent.futures.wait(self.futures.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
         self.set_state_to_finished_for_all_finished_tasks(done)
-        self.remove_from_execution(done)
-
-    def set_state_to_started_for_all_submitted_tasks(self):
-        for task in self.futures.values():
-            task.set_started()
+        self.remove_finished_futures(done)
 
     def set_state_to_finished_for_all_finished_tasks(self, futures_done):
         for task in [self.futures[future_done] for future_done in futures_done]:
-            task.set_finished()
-
-    def execute_and_wait_until_something_finish(self):
-        done, _ = concurrent.futures.wait(self.futures.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
-        return done
+            task.set_state_to_finished()
 
     def has_tasks_to_do(self):
         return bool(self.futures)
