@@ -5,6 +5,60 @@ import numpy as np
 from pipeline import Pipeline
 
 class TestSystem:
+    def test_simple_task_dependency_without_inputs(self):
+        pipeline = Pipeline()
+
+        # Create tasks
+        a = pipeline.create_task(lambda: None)
+        b = pipeline.create_task(lambda: None)
+
+        # Set task dependencies
+        pipeline.set_dependency(a, b)
+
+        # Run pipeline
+        pipeline.run()
+
+
+    def test_simple_task_with_data_propagation(self):
+        pipeline = Pipeline()
+
+        # Create tasks
+        a = pipeline.create_task(lambda: "Hello")
+        b = pipeline.create_task(lambda a: print(f"{a}, World!"))
+
+        # Set task dependencies
+        pipeline.set_dependency(a, b)
+
+        # Run pipeline
+        pipeline.run()
+
+    def test_simple_task_synchronization(self):
+        pipeline = Pipeline()
+
+        def a():
+            return "Hello"
+        def b():
+            return ", "
+        def c():
+            return "World!"
+
+        def d(a, b, c):
+            print(f"{a}{b}{c}")
+
+        # Create tasks
+        a = pipeline.create_task(a)
+        b = pipeline.create_task(b)
+        c = pipeline.create_task(c)
+        d = pipeline.create_task(d)
+
+        # Set task dependencies
+        pipeline.set_dependency(a, d)
+        pipeline.set_dependency(b, d)
+        pipeline.set_dependency(c, d)
+
+        # Run pipeline
+        pipeline.run()
+
     def test_parallel_execution_order(self):
         # GIVEN
         def task_a():
