@@ -27,7 +27,7 @@ class Task:
     def is_submitted(self):
         return self.state == TaskState.SUBMITTED
 
-    def is_running(self):
+    def is_started(self):
         return self.state == TaskState.STARTED
 
     def is_finished(self):
@@ -41,6 +41,9 @@ class Task:
 
     def set_finished(self):
         self.state = TaskState.FINISHED
+
+    def get_result(self):
+        return self.result
 
     def execute(self, *args):
         logger.info(f"Task {self.id} STARTED")
