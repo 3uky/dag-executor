@@ -1,8 +1,6 @@
 from enum import Enum
-
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class TaskState(Enum):

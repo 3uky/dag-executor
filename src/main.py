@@ -19,6 +19,8 @@ Graph TD;
 """
 
 import numpy as np
+import logging
+import argparse
 
 from pipeline import Pipeline
 
@@ -46,7 +48,7 @@ def compute_normalized_stats(normalized_array):
     return normalized_stats
 
 def merge_and_print_stats(raw_array, normalized_array):
-    """Collects both sets of stats, combines them into single dictionary and prints them. """
+    """Collects both sets of stats, combines them into single dictionary and prints them."""
     raw_min, raw_max, raw_mean, raw_std = raw_array
     norm_min, norm_max, norm_mean, norm_std = normalized_array
 
@@ -64,6 +66,15 @@ def merge_and_print_stats(raw_array, normalized_array):
     for key, value in stats.items():
         print(f"{key}: {value}")
 
+def logging_set_up():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true', help="Enable verbose logging")
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+    else:
+        logging.basicConfig(level=logging.CRITICAL)
 
 def main():
     # Initialization
@@ -84,8 +95,8 @@ def main():
     pipeline.set_dependency(b, e)
 
     # Execute pipeline
-    #executor.run_pipeline(pipeline)
     pipeline.run()
 
 if __name__ == "__main__":
+    logging_set_up()
     main()
