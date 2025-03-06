@@ -32,8 +32,8 @@ class TestTask:
             return "Hello, World!"
 
         task = Task(no_arg_callable)
-        task.execute()
-        assert task.get_result() == "Hello, World!"
+        result = task.callable()
+        assert result == "Hello, World!"
 
     def test_execute_with_arguments(self):
         def arg_callable(a, b):
@@ -44,9 +44,9 @@ class TestTask:
         expected_result = a + b
 
         task = Task(arg_callable)
-        task.execute(a, b)
+        result = task.callable(a, b)
 
-        assert task.get_result() == expected_result
+        assert result == expected_result
 
     def skip_test_execute(self):
         def example_callable_with_delay():
@@ -55,7 +55,7 @@ class TestTask:
         task = Task(example_callable_with_delay)
 
         start_time = time.time()
-        task.execute()
+        task.callable()
         end_time = time.time()
 
         total_time = end_time - start_time

@@ -8,7 +8,7 @@ class Executor:
 
     def submit_for_execution(self, task, inputs=()):
             task.set_state_to_started()
-            future = self.executor.submit(task.execute, *inputs)
+            future = self.executor.submit(task.callable, *inputs)
             self.futures[future] = task
 
     def wait_for_task_finish(self):
@@ -16,6 +16,7 @@ class Executor:
 
         for future in done:
             task = self.futures[future]
+            task.result = future.result()
             task.set_state_to_finished()
             del self.futures[future]
 
