@@ -39,9 +39,9 @@ class Task:
         return self.result
 
     def execute(self, *args):
-        logger.info(f"Task {self.id} RUNNING")
-        logger.info(f"inputs:\n{args}")
+        logger.debug(f"Task {self.id} RUNNING")
+        logger.debug(f"inputs:\n{args}")
         result = self.callable(*args)
-        logger.info(f"outputs:\n{result}")
-        logger.info(f"Task {self.id} FINISHING")
+        logger.debug(f"outputs:\n{result}")
+        logger.debug(f"Task {self.id} FINISHING")
         return result

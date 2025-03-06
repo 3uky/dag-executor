@@ -68,13 +68,20 @@ def merge_and_print_stats(raw_array, normalized_array):
 
 def logging_set_up():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true', help="Enable verbose logging")
+    parser.add_argument('-v', '--verbose', action='count', default=0, help="Increase verbosity level (use -v, -vv, -vvv)")
     args = parser.parse_args()
 
-    if args.verbose:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-    else:
-        logging.basicConfig(level=logging.CRITICAL)
+    def get_verbose_level(level):
+        verbosity_to_log_level = {
+            0: logging.WARNING,  # Default: show only warnings and errors
+            1: logging.INFO,     # -v: Show info, warning, and error messages
+            2: logging.DEBUG,    # -vv: Show debug, info, warning, and error messages
+            3: logging.DEBUG,    # -vvv: -
+        }
+        if level < len(verbosity_to_log_level):
+            return verbosity_to_log_level[level]
+
+    logging.basicConfig(level=get_verbose_level(args.verbose), format='%(asctime)s - %(message)s')
 
 def main():
     # Initialization
