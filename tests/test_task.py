@@ -1,7 +1,7 @@
 import pytest
 import time
 
-from task import Task, TaskState
+from task import Task
 
 def example_callable(x):
     return x * 2
@@ -50,7 +50,7 @@ class TestTask:
 
     def skip_test_execute(self):
         def example_callable_with_delay():
-            time.sleep(1)
+            time.sleep(0.1)
 
         task = Task(example_callable_with_delay)
 
@@ -59,4 +59,4 @@ class TestTask:
         end_time = time.time()
 
         total_time = end_time - start_time
-        assert total_time >= 1
+        assert total_time >= 0.1

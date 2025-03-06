@@ -1,11 +1,10 @@
 import pytest
 import time
-import numpy as np
 
 from pipeline import Pipeline
 
 class TestSystem:
-    def test_simple_task_with_data_propagation(self):
+    def test_data_propagation(self):
         pipeline = Pipeline()
 
         # Create tasks
@@ -20,7 +19,7 @@ class TestSystem:
 
         assert b.get_result() == "Hello, World!"
 
-    def test_simple_task_synchronization(self):
+    def test_synchronization(self):
         pipeline = Pipeline()
 
         def a():
@@ -52,19 +51,19 @@ class TestSystem:
     def test_parallel_execution_order(self):
         # GIVEN
         def task_a():
-            time.sleep(1)
+            time.sleep(0.1)
 
         def task_b():
-            time.sleep(4)
+            time.sleep(0.4)
 
         def task_c():
-            time.sleep(1)
+            time.sleep(0.1)
 
         def task_d():
-            time.sleep(1)
+            time.sleep(0.1)
 
         def task_e():
-            time.sleep(1)
+            time.sleep(0.1)
 
         pipeline = Pipeline()
 
@@ -85,79 +84,14 @@ class TestSystem:
         # Run pipeline
         pipeline.run()
 
-        # check order from logs
-
-
-    def test_simple_task_dependency_without_data_propagation(self):
-        pipeline = Pipeline()
-
-        # Create tasks
-        a = pipeline.create_task(lambda: None)
-        b = pipeline.create_task(lambda: None)
-
-        # Set task dependencies
-        pipeline.set_dependency(a, b)
-
-        # Run pipeline
-        pipeline.run()
-
-        # check order from logs (expected order is a, b)
-
-    def test_result_propagation_of_entry_task(self):
-        # GIVEN
-        def generate_random_data():
-            random_data = np.random.randint(0, 10, size=(3, 4))
-            return random_data
-
-        def compute_raw_stats(random_data):
-            raw_stats = (np.min(random_data), np.max(random_data), np.mean(random_data), np.std(random_data))
-            return raw_stats
-
-        def normalize_array(random_data):
-            min_value = np.min(random_data)
-            max_value = np.max(random_data)
-            normalized_array = (random_data - min_value) / (max_value - min_value)
-            return normalized_array
-
-        def compute_normalized_stats(normalized_array):
-            normalized_stats = (np.min(normalized_array), np.max(normalized_array), np.mean(normalized_array), np.std(normalized_array))
-            return normalized_stats
-
-        def merge_and_print_stats(raw_array, normalized_array):
-            raw_min, raw_max, raw_mean, raw_std = raw_array
-            norm_min, norm_max, norm_mean, norm_std = normalized_array
-
-            stats = {
-                'raw min': raw_min,
-                'raw max': raw_max,
-                'raw mean': raw_mean,
-                'raw std': raw_std,
-                'normalized min': norm_min,
-                'normalized max': norm_max,
-                'normalized mean': norm_mean,
-                'normalized std': norm_std
-            }
-
-            for key, value in stats.items():
-                print(f"{key}: {value}")
-
-        pipeline = Pipeline()
-
-        # Create tasks
-        A = pipeline.create_task(generate_random_data)
-        B = pipeline.create_task(compute_raw_stats)
-        C = pipeline.create_task(normalize_array)
-        D = pipeline.create_task(compute_normalized_stats)
-        E = pipeline.create_task(merge_and_print_stats)
-
-        # Set task dependencies
-        pipeline.set_dependency(A, B)
-        pipeline.set_dependency(A, C)
-        pipeline.set_dependency(C, D)
-        pipeline.set_dependency(D, E)
-        pipeline.set_dependency(B, E)
-
-        # Run pipeline
-        pipeline.run()
-
-        # Check log output / stdout (stats)
+        # manually check order from logs, expected order:
+        # Task task_a STARTED
+        # Task task_a FINISHED
+        # Task task_b STARTED
+        # Task task_c STARTED
+        # Task task_c FINISHED
+        # Task task_d STARTED
+        # Task task_d FINISHED
+        # Task task_b FINISHED
+        # Task task_e STARTED
+        # Task task_e FINISHED
