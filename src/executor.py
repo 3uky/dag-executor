@@ -11,18 +11,13 @@ class Executor:
             future = self.executor.submit(task.execute, *inputs)
             self.futures[future] = task
 
-    def remove_finished_futures(self, finished_futures):
-        for finished_future in finished_futures:
-            del self.futures[finished_future]
-
     def wait_for_task_finish(self):
         done, _ = concurrent.futures.wait(self.futures.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
-        self.set_state_to_finished_for_all_finished_tasks(done)
-        self.remove_finished_futures(done)
 
-    def set_state_to_finished_for_all_finished_tasks(self, futures_done):
-        for task in [self.futures[future_done] for future_done in futures_done]:
+        for future in done:
+            task = self.futures[future]
             task.set_state_to_finished()
+            del self.futures[future]
 
     def has_tasks_to_do(self):
         return bool(self.futures)
