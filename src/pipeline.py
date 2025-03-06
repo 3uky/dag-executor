@@ -37,10 +37,12 @@ class Pipeline:
     def run(self):
         self.initial_check()
 
-        self.submit_ready_tasks()
-        while self.executor.has_tasks_to_do():
-            self.executor.wait_for_task_finish()
+        while not self.are_all_tasks_finished():
             self.submit_ready_tasks()
+            self.executor.wait_for_task_finish()
+
+    def are_all_tasks_finished(self):
+        return all(task.is_finished() for task in self.get_tasks())
 
     def submit_ready_tasks(self):
         for task in self.get_ready_to_run_tasks():

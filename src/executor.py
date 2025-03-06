@@ -19,6 +19,3 @@ class Executor:
             task.result = future.result()
             task.set_state_to_finished()
             del self.futures[future]
-
-    def has_tasks_to_do(self):
-        return bool(self.futures)

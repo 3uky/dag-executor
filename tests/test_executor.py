@@ -7,7 +7,6 @@ from task import Task
 
 
 def example_callable(a, b, delay=0):
-    print(f"a: {a} b: {b} delay: {delay}s")
     time.sleep(delay)  # Simulate some work with a delay
     return a + b
 
@@ -19,15 +18,8 @@ class TestExecutor:
     def test_submit_for_execution(self, task):
         executor = Executor()
         executor.submit_for_execution(task, (2, 3))
-        assert executor.has_tasks_to_do()
-
-    def test_has_tasks_to_do(self, task):
-        executor = Executor()
-        assert not executor.has_tasks_to_do()
-        executor.submit_for_execution(task, (2, 3))
-        assert executor.has_tasks_to_do()
         executor.wait_for_task_finish()
-        assert not executor.has_tasks_to_do()
+        assert task.get_result() == 5
 
     def test_parallel_execution(self, task):
         executor = Executor()
@@ -39,7 +31,7 @@ class TestExecutor:
 
         # Execute tasks in parallel
         start_time = time.time()
-        while executor.has_tasks_to_do():
+        while executor.futures:
             executor.wait_for_task_finish()  # This will block until some task(s) is completed
         end_time = time.time()
 
