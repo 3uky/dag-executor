@@ -39,9 +39,7 @@ class Task:
         return self.result
 
     def execute(self, *args):
-        logger.debug(f"Task {self.id} RUNNING")
-        logger.debug(f"inputs:\n{args}")
+        logger.debug(f"Task {self.id} inputs:\n{args}")
         result = self.callable(*args)
-        logger.debug(f"outputs:\n{result}")
-        logger.debug(f"Task {self.id} FINISHING")
+        logger.debug(f"Task {self.id} outputs:\n{result}")
         return result
