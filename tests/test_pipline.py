@@ -73,3 +73,18 @@ class TestPipeline:
 
         assert task_inputs_b == [task_a.result]
         assert task_inputs_c == [task_a.result]
+
+    def test_are_all_tasks_finished(self, pipeline):
+        task_a = pipeline.create_task(example_callable)
+        task_b = pipeline.create_task(example_callable)
+        task_c = pipeline.create_task(example_callable)
+        assert not pipeline.are_all_tasks_finished()
+
+        task_a.set_state_to_finished()
+        task_b.set_state_to_finished()
+        assert not pipeline.are_all_tasks_finished()
+
+        task_c.set_state_to_finished()
+        assert pipeline.are_all_tasks_finished()
+
+
