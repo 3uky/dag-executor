@@ -1,5 +1,5 @@
 """
-Test Example
+Entry Test Example
 
 This example processes a random 2D NumPy array and computes statistics before and
 after normalization.
