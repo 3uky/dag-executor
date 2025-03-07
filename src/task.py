@@ -9,6 +9,7 @@ class TaskState(Enum):
     FINISHED = 2
 
 class Task:
+    """ The Task class encapsulates the state and execution logic of individual tasks. """
     def __init__(self, callable):
         self.id = callable.__name__
         self.callable = callable

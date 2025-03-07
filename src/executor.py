@@ -1,7 +1,7 @@
 import concurrent.futures
 
 class Executor:
-    """Responsible for executing the assigned tasks. It maintains a pool of workers/futures."""
+    """ The Executor class is responsible for managing task execution asynchronously. """
     def __init__(self):
         self.futures = {}
         self.executor = concurrent.futures.ThreadPoolExecutor()

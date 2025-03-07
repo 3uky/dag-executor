@@ -1,4 +1,8 @@
 class DirectAcyclicGraph:
+    """
+    The DirectAcyclicGraph handling graph operations such as adding nodes and edges, checking for cycles, and getting
+    input/output nodes. It's focused solely on representing the graph structure.
+    """
     def __init__(self):
         self.nodes = {}
 
@@ -48,9 +52,15 @@ class DirectAcyclicGraph:
         return [node for node in self.nodes if not any(node in self.nodes[u] for u in self.nodes)]
 
     def is_acyclic(self):
-        """Detects whether the graph has a cycle. Returns True if the graph is acyclic, otherwise False."""
+        """
+        Detects whether the graph has a cycle. Returns True if the graph is acyclic, otherwise False.
 
-        # State tracking for DFS
+        Depth-First Search (DFS) algorithm:
+        1. For each node, perform DFS if it hasn't been visited.
+        2. Once you visit a node, recursively visit all its neighbors.
+        3. If a node has no unvisited neighbors, mark it as fully processed.
+        """
+
         UNVISITED = 0
         VISITING = 1
         VISITED = 2

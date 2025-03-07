@@ -3,6 +3,11 @@ from task import Task
 from executor import Executor
 
 class Pipeline:
+    """
+    The Pipeline class manages the orchestration of tasks, checking for readiness and managing dependencies. This is a
+    central place for coordinating task execution.
+    """
+
     def __init__(self):
         self.graph = DirectAcyclicGraph()
         self.executor = Executor()
