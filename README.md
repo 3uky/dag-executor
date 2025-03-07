@@ -1,4 +1,4 @@
-# Direct Acyclic Graph Executor
+# Directed Acyclic Graph Executor
 
 The project implements a Directed Acyclic Graph (DAG) executor in Python that enables the creation and execution of computational pipelines. It handles the dependencies between tasks (represented as nodes in a DAG) and ensures that tasks are executed only when all their required inputs are available. Each task can have one or more dependencies, and the system ensures that tasks are executed in the correct order. The pipeline is designed to handle both concurrent and parallel execution of tasks, allowing for efficient execution of tasks.
 
@@ -143,7 +143,7 @@ pytest
 
 For running assignment task example from `SW Entry Task.pdf` use following commands:
 ```bash
-buky@debian:~/git/dag-executor/src$ python main.py 
+~/git/dag-executor/src$ python main.py 
 raw min: 1
 raw max: 9
 raw mean: 5.333333333333333
@@ -156,7 +156,7 @@ normalized std: 0.3473610833444389
 
 Information about task state changes could be enabled with option `-v`:
 ```bash
-buky@debian:~/git/dag-executor/src$ python main.py -v
+~/git/dag-executor/src$ python main.py -v
 2025-03-06 15:08:42,932 - Task generate_random_data STARTED
 2025-03-06 15:08:42,932 - Task generate_random_data FINISHED
 2025-03-06 15:08:42,932 - Task compute_raw_stats STARTED
@@ -172,7 +172,7 @@ buky@debian:~/git/dag-executor/src$ python main.py -v
 For display task inputs and outputs during partial computation use higher level of verbosity `-vv`: 
 
 ```bash
-buky@debian:~/git/dag-executor/src$ python main.py -vv
+~/git/dag-executor/src$ python main.py -vv
 2025-03-06 15:08:47,491 - Task generate_random_data STARTED
 2025-03-06 15:08:47,491 - Task generate_random_data inputs:
 ()
@@ -194,7 +194,7 @@ buky@debian:~/git/dag-executor/src$ python main.py -vv
 ### System Test Description
 
 - **test_system.py**: Ensures whole pipeline execution, data propagation, and synchronization across tasks.
-- **test_entry_task.py**: Validates task execution and dependency resolution within the pipeline, with an example based on the `SW Entry Tasks.pdf`.
+- **test_entry_task.py**: Automated evaluation of entry task from `SW Entry Tasks.pdf`.
 
 ## Benefits of the Solution:
 
@@ -205,4 +205,4 @@ buky@debian:~/git/dag-executor/src$ python main.py -vv
 
 ## Conclusion:
 
-This solution provides a flexible and efficient way to define and execute computational pipelines represented as DAGs. It ensures correctness by respecting data dependencies, offers concurrency for independent tasks, and maintains modularity for future extensions. The design is scalable and efficient, making it suitable for numerical computations and larger workflows.
+This solution provides a flexible and efficient way to define and execute computational pipelines represented as directed acyclic graph. It ensures correctness by respecting data dependencies, offers concurrency for independent tasks, and maintains modularity for future extensions. The design is scalable and efficient, making it suitable for numerical computations and larger workflows.
