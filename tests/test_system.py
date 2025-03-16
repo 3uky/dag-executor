@@ -3,13 +3,37 @@ import time
 
 from pipeline import Pipeline
 
+def task_hello():
+    return "Hello"
+
+def task_world(a_result):
+    return(f"{a_result}, World!")
+
+def task_1():
+    return 1
+
+def task_10():
+    return 10
+
+def task_100():
+    return 100
+
+def task_sum(a, b, c):
+    return a + b + c
+
+def task_sleep_100_ms():
+    time.sleep(0.1)
+
+def task_sleep_400_ms():
+    time.sleep(0.4)
+
 class TestSystem:
     def test_data_propagation(self):
         pipeline = Pipeline()
 
         # Create tasks
-        a = pipeline.create_task(lambda: "Hello")
-        b = pipeline.create_task(lambda a: f"{a}, World!")
+        a = pipeline.create_task(task_hello)
+        b = pipeline.create_task(task_world)
 
         # Set task dependencies
         pipeline.set_dependency(a, b)
@@ -22,21 +46,11 @@ class TestSystem:
     def test_synchronization(self):
         pipeline = Pipeline()
 
-        def a():
-            return 1
-        def b():
-            return 10
-        def c():
-            return 100
-
-        def d(a, b, c):
-            return a + b + c
-
         # Create tasks
-        a = pipeline.create_task(a)
-        b = pipeline.create_task(b)
-        c = pipeline.create_task(c)
-        d = pipeline.create_task(d)
+        a = pipeline.create_task(task_1)
+        b = pipeline.create_task(task_10)
+        c = pipeline.create_task(task_100)
+        d = pipeline.create_task(task_sum)
 
         # Set task dependencies
         pipeline.set_dependency(a, d)
@@ -50,29 +64,14 @@ class TestSystem:
 
     def test_parallel_execution_order(self):
         # GIVEN
-        def task_a():
-            time.sleep(0.1)
-
-        def task_b():
-            time.sleep(0.4)
-
-        def task_c():
-            time.sleep(0.1)
-
-        def task_d():
-            time.sleep(0.1)
-
-        def task_e():
-            time.sleep(0.1)
-
         pipeline = Pipeline()
 
         # Create tasks
-        a = pipeline.create_task(task_a)
-        b = pipeline.create_task(task_b)
-        c = pipeline.create_task(task_c)
-        d = pipeline.create_task(task_d)
-        e = pipeline.create_task(task_e)
+        a = pipeline.create_task(task_sleep_100_ms, "a (100 ms)")
+        b = pipeline.create_task(task_sleep_400_ms, "b (400 ms)")
+        c = pipeline.create_task(task_sleep_100_ms, "c (100 ms)")
+        d = pipeline.create_task(task_sleep_100_ms, "d (100 ms)")
+        e = pipeline.create_task(task_sleep_100_ms, "e (100 ms)")
 
         # Set task dependencies
         pipeline.set_dependency(a, b)
@@ -85,13 +84,13 @@ class TestSystem:
         pipeline.run()
 
         # manually check order from logs, expected order:
-        # Task task_a STARTED
-        # Task task_a FINISHED
-        # Task task_b STARTED
-        # Task task_c STARTED
-        # Task task_c FINISHED
-        # Task task_d STARTED
-        # Task task_d FINISHED
-        # Task task_b FINISHED
-        # Task task_e STARTED
-        # Task task_e FINISHED
+        # Task a (100 ms) STARTED
+        # Task a (100 ms) FINISHED
+        # Task task_b (400 ms) STARTED
+        # Task task_c (100 ms) STARTED
+        # Task task_c (100 ms) FINISHED
+        # Task task_d (100 ms) STARTED
+        # Task task_d (100 ms) FINISHED
+        # Task task_b (400 ms) FINISHED
+        # Task task_e (100 ms) STARTED
+        # Task task_e (100 ms) FINISHED

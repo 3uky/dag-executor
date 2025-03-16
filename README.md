@@ -39,7 +39,7 @@ stateDiagram-v2
 
 **Task Representation**: The `Task` class encapsulates the state and execution logic of individual tasks. Isolates the task behavior from the graph, allowing easier future modifications or extensions.
 
-**Task Execution**: The `Executor` class is responsible for managing task execution asynchronously using `concurrent.futures.ThreadPoolExecutor`. This separation is excellent because it decouples execution from task definition and the DAG structure.
+**Task Execution**: The `Executor` class is responsible for managing task execution asynchronously using `concurrent.futures.ProcessPoolExecutor`. This separation is excellent because it decouples execution from task definition and the DAG structure.
 
 **Pipeline Control**: The `Pipeline` class manages the orchestration of tasks, checking for readiness and managing dependencies. This is a central place for coordinating task execution.
 
@@ -190,6 +190,7 @@ For display task inputs and outputs during partial computation use higher level 
 - **test_executor.py**: Verifies the correct submission, execution, and parallel execution of tasks within the executor.
 - **test_pipeline.py**: Tests task creation, dependency handling, and correct execution flow in the pipeline.
 - **test_task.py**: Ensures task state transitions and correct execution with or without arguments.
+- **test_performance.py**: Demonstrates the performance improvement of parallel task execution using pipeline compared to sequential execution.
 
 ### System Test Description
 

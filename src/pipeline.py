@@ -12,8 +12,8 @@ class Pipeline:
         self.graph = DirectAcyclicGraph()
         self.executor = Executor()
 
-    def create_task(self, callable):
-        task = Task(callable)
+    def create_task(self, callable, id=None):
+        task = Task(callable, id)
         self.graph.add_node(task)
         return task
 

@@ -10,8 +10,8 @@ class TaskState(Enum):
 
 class Task:
     """ The Task class encapsulates the state and execution logic of individual tasks. """
-    def __init__(self, callable):
-        self.id = callable.__name__
+    def __init__(self, callable, id=None):
+        self.id = callable.__name__ if not id else id
         self.callable = callable
         self.state = TaskState.PENDING
         self.result = None

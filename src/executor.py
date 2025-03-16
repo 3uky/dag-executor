@@ -4,7 +4,7 @@ class Executor:
     """ The Executor class is responsible for managing task execution asynchronously. """
     def __init__(self):
         self.futures = {}
-        self.executor = concurrent.futures.ThreadPoolExecutor()
+        self.executor = concurrent.futures.ProcessPoolExecutor()
 
     def submit_for_execution(self, task, inputs=()):
             task.set_state_to_started()
