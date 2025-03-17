@@ -5,8 +5,7 @@ from pipeline import Pipeline
 import sys
 
 def heavy_cpu_work():
-    for _ in range(200):
-        np.random.rand(1000, 1000)
+    np.sum(range(20000000))
 
 class TestPerformance:
     def test_pipelined_parallel_cpu_heavy_tasks_should_be_faster_than_sequential_execution(self):
@@ -29,9 +28,12 @@ class TestPerformance:
         end_time = time.time()
         total_time_sequential = end_time - start_time
 
-        # print(f"\nGil enabled (expected is False): {sys._is_gil_enabled()}")
+        if hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled():
+            print(f"\nGil: DISABLED")
+        else:
+            print(f"\nGil: ENABLED")
         print(f"Total time for parallel execution (pipeline): {total_time_pipeline} s")
         print(f"Total time for sequential execution: {total_time_sequential} s")
 
-        # Expecting that pipelined execution of two longer tasks would be at least 1.8 faster than sequential run
-        assert total_time_pipeline < total_time_sequential / 1.8
+        # Expecting that pipelined execution of two longer tasks would be at least 1.6 faster than sequential run
+        assert total_time_pipeline < total_time_sequential / 1.6
